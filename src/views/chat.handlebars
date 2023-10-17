@@ -1,0 +1,25 @@
+<h1 class="divHeader">Chat</h1>
+
+<div>
+    <form action="" class="form">
+        <ul>
+            <li>
+                 <i id="user" class="user"></i>
+                 <input id="chatbox" class="input">
+            </li>
+        </ul>
+    </form>
+  
+</div>
+
+<div id="logs" class="divHeader">
+    {{#each messages}}
+    <div class="message divHeader" >
+        <span class="user">{{this.user}}</span>: {{this.message}}
+    </div>
+    {{/each}}
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="/socket.io/socket.io.js"></script>
+<script src="/static/js/index.js"></script>

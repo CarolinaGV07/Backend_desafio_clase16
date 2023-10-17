@@ -1,0 +1,65 @@
+<div class="divH">
+    <h2>Products</h2>
+    <a class="aH" href="/form_products">Create Product</a>
+</div>
+
+<form id="form" class="form">
+    <ul>
+        <li>
+            <label class="label" for="">Limit:</label>
+            <input class="input" type="number" id="query-limit" value = "{{result.limit}}">
+        </li>
+        <li>
+            <label class="label" for="">Page:</label>
+            <input class="input" type="number" id="query-page" value = "{{result.page}}">
+        </li>
+        <div class="divButton">
+            <button class="button" type="submit">Load</button>
+        </div>
+    </ul>
+</form>
+
+<br>
+
+<div class="div">
+<table class="border" border="1px">
+    <thead class="head">
+        <tr>
+            <td class="td">ID</td>
+            <td class="td">Title</td>
+            <td class="td">Description</td>
+            <td class="td">Code</td>
+            <td class="td">Price</td>
+            <td class="td">Status</td>
+            <td class="td">Stock</td>
+            <td class="td">Category</td>
+        </tr>
+    </thead>
+    <tbody>
+        {{#each result.docs}}
+        <tr>
+            <td class="tdata">{{this.id}}</td>
+            <td class="tdata">{{this.title}}</td>
+            <td class="tdata">{{this.description}}</td>
+            <td class="tdata">{{this.code}}</td>
+            <td class="tdata">{{this.price}}</td>
+            <td class="tdata">{{this.status}}</td>
+            <td class="tdata">{{this.stock}}</td>
+            <td class="tdata">{{this.category}}</td>
+        </tr>
+        {{/each}}
+    </tbody>
+</table>
+
+<script>
+    document.getElementById('form').onsubmit = (e) => {
+        e.preventDefault()
+        const limit = document.getElementById('query-limit').value
+        const page = document.getElementById('query-page').value
+
+        const url = `/home?limit=${limit}&page=${page}`
+        window.location.href = url
+    }
+</script>
+</div>
+
