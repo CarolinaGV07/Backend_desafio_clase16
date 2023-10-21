@@ -1,115 +1,103 @@
-import express from 'express'
-import handlebars from 'express-handlebars'
-import session from 'express-session'
-import MongoStore from 'connect-mongo'
-import { Server } from 'socket.io'
-import mongoose from 'mongoose'
-import sessionRouter from './routes/session.router.js'
-import passport from 'passport'
-import initializePassport from './config/passport.config.js'
-import chatModel from './DAO/mongoManager/models/chat.model.js'
-import productModel from './DAO/mongoManager/models/product.model.js'
-import productRouter from './routes/product.router.js'
-import cartRouter from './routes/cart.router.js'
-import viewsRouter from './routes/views.router.js'
-import __dirname from './utils.js'
-import cookieParser from 'cookie-parser'
+/*-----Import the dependencies-----*/
+import express from "express";
+import handlebars from "express-handlebars";
+import __dirname from "./utils.js";
+import { Server } from "socket.io";
+import session from "express-session";
+import MongoStore from "connect-mongo";
+import initializatePassport from "./config/passport.config.js";
+import passport from "passport";
+import cookieParser from "cookie-parser";
+import config from "./config/config.js";
 
-//Base de datos de Mongo Atlas
-const URL = 'mongodb+srv://CarolinaCoderDB:3992coderbd@coderclustercgv.kecc4uv.mongodb.net/?retryWrites=true&w=majority'
-const dbName = 'ecommerce'
+/*-----Import the routes-----*/
+import productsRoutes from "./routes/products.routes.js";
+import cartRoutes from "./routes/cart.routes.js";
+import chatRoutes from "./routes/chat.routes.js";
+import viewsRoutes from "./routes/views.routes.js";
+import sessionRoutes from "./routes/session.routes.js";
+import { messageService } from "./services/index.js";
+import { productService } from "./services/index.js";
 
-//Configuracion Express
-const app = express()
-app.use('/static', express.static(__dirname + '/public'))
-app.use(express.urlencoded({ extended: true }))
-app.use(express.json())
+/*-----Configure the server-----*/
+const PORT = config.port;
+const app = express();
 
-//Configuracion Handlebars
-app.engine('handlebars', handlebars.engine())
-app.set('views', __dirname + '/views')
-app.set('view engine', 'handlebars')
+/*-----configure the template engine-----*/
+app.engine("handlebars", handlebars.engine());
+app.set("views", __dirname + "/views");
+app.set("view engine", "handlebars");
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use("/static", express.static(__dirname + "/public"));
 
-//Configuracion Mongo Sessions
-app.use(session ({
-  store: MongoStore.create({
-      mongoUrl: URL,
-      dbName,
+app.use(
+  session({
+    store: MongoStore.create({
+      mongoUrl: config.URI,
+      dbName: config.dbName,
       mongoOptions: {
-          useNewUrlParser: true,
-          useUnifiedTopology: true
+        useNewUrlParser: true,
+        useUnifiedTopology: true,
       },
-      ttl:100
-  }),
-  secret: 'secret',
-  resave: true,
-  saveUninitialized: true
-}))
+      ttl: config.ttl,
+    }),
+    secret: "CoderSecret",
+    resave: true,
+    saveUninitialized: true,
+  })
+);
 
-//Passport
-initializePassport()
-app.use(passport.initialize())
-app.use(passport.session())
+initializatePassport();
+app.use(passport.initialize());
+app.use(passport.session());
 app.use(cookieParser("keyCookieForJWT"));
 
-//Rutas
-app.use('/', viewsRouter)
-app.use('/api/products', productRouter)
-app.use('/api/carts', cartRouter)
-app.use('/api/session', sessionRouter)
+app.use("/", viewsRoutes);
+app.use("/api/products", productsRoutes);
+app.use("/api/cart", cartRoutes);
+app.use("/api/session", sessionRoutes);
+app.use("/api/chat", chatRoutes);
 
-//Configuracion Socket.io para chat y realTimeProducts
 const runServer = () => {
-  const httpServer = app.listen(8080, () => console.log('Listening...'))
-  const io = new Server(httpServer)
-
-  io.on('connection', socket => {
-    socket.on('new-product', async data => {
+  const httpServer = app.listen(
+    PORT,
+    console.log(`✅Server escuchando in the port: ${PORT}`)
+  );
+  const io = new Server(httpServer);
+  io.on("connection", (socket) => {
+    console.log("Client connected succesly");
+    socket.on(
+      "new-product",
+      async (data) => {
+        try {
+          await productService.addProduct(data);
+          const products = await productService.getProducts();
+          io.emit("reload-table", products);
+        } catch (e) {
+          console.log(e);
+        }
+      }
+    );
+    socket.on("delete-product", async (id, email) => {
       try {
-        const products = await productModel.create(data)
-        io.emit('reload-table', products)
-      } catch (error) {
-        console.error('Failed to save product', error)
+        await productService.deleteProduct(id, email);
+        const products = await productService.getProducts();
+        io.emit("reload-table", products);
+      } catch (e) {
+        console.log(e);
       }
-    })
+    });
+    socket.on("message", async (data) => {
+      await messageService.saveMessage(data);
+      //Envia el back
+      const messages = await messageService.getMessages();
+      io.emit("messages", messages);
+    });
+    socket.on("disconnect", () => {
+      console.log(`User ${socket.id} disconnected`);
+    });
+  });
+};
 
-    socket.on('deleteProduct', async (productId) => {
-      try {
-        await productModel.findByIdAndDelete(productId);
-        io.emit('deleting-product', productId);
-      } catch (error) {
-        console.error('Failed to delete product', error);
-      }
-    })
-
-    socket.on('new', user => console.log(`${user} is connected`))
-
-    socket.on('message', async (data) => {
-      try{
-        await chatModel.create(data)
-        const messages = await chatModel.find().lean().exec()
-        console.log(messages)
-        io.emit('logs', messages)
-       
-      }catch (error) {
-        console.error('Failed to save messages', error);
-      }
-      
-    })
-
-  })
-
-}
-
-//Configuracion base de datos
-mongoose.set('strictQuery', false)
-console.log('Connecting...')
-mongoose.connect(URL, {
-  dbName
-})
-  .then(() => {
-    console.log('DB connected')
-    runServer()
-  })
-  .catch(e => console.log('Can`t connect to DB'))
-
+runServer();

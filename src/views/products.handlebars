@@ -1,60 +1,143 @@
-<!DOCTYPE html>
 <html lang="en">
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Productos</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
-        integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
-    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
-</head>
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
+      integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN"
+      crossorigin="anonymous"
+    />
+    <link
+      rel="stylesheet"
+      type="text/css"
+      href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css"
+    />
+  </head>
 
-<body>
+  <body>
     <header>
-        <div>
-            <h2>Bienvenido/a {{user.first_name}}</h2>
-            <a href="/api/session/logout">Logout</a>
-        </div>
-        <div>
-            <a href="/login">Login</a> <br>
-            <a href="/register">Register</a> <br>
-            <a href="/profile">Profile</a>
-        </div>
+      <div>
+        <h2>Bienvenido/a {{first_name}} ({{rol}})</h2>
+        <a href="/api/session/logout">Logout</a>
+      </div>
+      <div>
+        <a href="/login">Login</a>
+        <br />
+        <a href="/register">Register</a>
+        <br />
+        <a href="/profile">Profile</a>
+        <br>
+        <a href="/api/products/realtimeProducts">Administrar productos</a>
+        <br>
+        <a href="/api/chat">Chat</a>
+      </div>
     </header>
     <main>
-        <div class="divTitle">
-            <h1 id="h1">Productos</h1>
-        </div>
+      <div class="divTitle">
+        <h1 id="h1">Productos</h1>
+      </div>
 
-        <div class="container text-center">
-            <div class="col-md my-3 cardProducts">
-                {{#each products}}
-                <div class="col">
-                    <div class="card" style="width: 18rem;">
-                        <img src="{{thumbnail}}" alt="Imagen del tratamiento"
-                            class="card-img-top img-fluid img-thumbnail imgcard" style="height:300px">
-                        <div class="card-body">
-                            <h5 class="card-title">{{title}}</h5>
-                            <p>Precio: ${{price}}</p>
-                            <p>Categoría: {{category}}</p>
-                            <button onclick="addToCart('{{_id}}','{{@root.cart._id}}')"
-                                class="btn btn-secondary">Agregar al carrito</button>
-                        </div>
-                    </div>
+      <div class="container text-center">
+        <div class="col-md my-3 cardProducts">
+          {{#each products}}
+            <div class="col">
+              <div class="card" style="width: 18rem;">
+                <img
+                  src="{{thumbnail}}"
+                  alt="Imagen del tratamiento"
+                  class="card-img-top img-fluid img-thumbnail imgcard"
+                  style="height:300px"
+                />
+                <div class="card-body">
+                  <h5 class="card-title">{{title}}</h5>
+                  <p>Precio: ${{price}}</p>
+                  <p>Categoría: {{category}}</p>
+                  <a
+                    class="btn"
+                    style="text-decoration: none;margin-top:2rem;"
+                    href="/api/cart/pid/{{_id}}"
+                  >Add to cart</a>
                 </div>
-                {{/each}}
+              </div>
             </div>
+          {{/each}}
         </div>
+      </div>
+
+      <nav aria-label="Page navigation" style="width:20%;margin: 0 auto;">
+        <ul class="pagination justify-content-center" style="gap: 5px;">
+          {{#if productsPrev}}
+            <li class="page-item">
+              <a
+                class="page-link"
+                href="{{productsPrev}}"
+                aria-label="Anterior"
+                style="height: 40px;width:40px;display:flex;align-items:center;justify-content:center;background-color:rgb(186, 72, 195);
+          font-weight:bold;font-size:1.5rem;"
+              >
+                <span aria-hidden="true" style="color: white;">&laquo;</span>
+              </a>
+            </li>
+          {{/if}}
+          {{#if productsPrevValidate}}
+            <li class="page-item">
+              <a
+                class="page-link"
+                href="{{productsPrev}}"
+                aria-label="Anterior"
+                style="height: 40px;width:40px;display:flex;align-items:center;justify-content:center;background-color:rgb(186, 72, 195);
+          font-weight:bold;font-size:1.5rem;color:white;"
+              >
+                {{productsPrevValidate}}
+              </a>
+            </li>
+          {{/if}}
+          {{#if productsNextValidate}}
+            <li class="page-item">
+              <a
+                class="page-link"
+                href="{{productsNext}}"
+                aria-label="Anterior"
+                style="height: 40px;width:40px;display:flex;align-items:center;justify-content:center;background-color:rgb(186, 72, 195);
+          font-weight:bold;font-size:1.5rem;color:white"
+              >
+                {{productsNextValidate}}
+              </a>
+            </li>
+          {{/if}}
+          <!-- Puedes agregar más elementos de paginación si es necesario -->
+          {{#if productsNext}}
+            <li class="page-item">
+              <a
+                class="page-link"
+                href="{{productsNext}}"
+                aria-label="Siguiente"
+                style="height: 40px;width:40px;display:flex;align-items:center;justify-content:center;background-color:rgb(186, 72, 195);
+          font-weight:bold;font-size:1.5rem;color:white"
+              >
+                <span aria-hidden="true">&raquo;</span>
+              </a>
+            </li>
+          {{/if}}
+        </ul>
+      </nav>
     </main>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"
-        integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL"
-        crossorigin="anonymous"></script>
+    <script
+      src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"
+      integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL"
+      crossorigin="anonymous"
+    ></script>
 
     <script src="/static/js/products.js"></script>
 
-    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
-</body>
+    <script
+      type="text/javascript"
+      src="https://cdn.jsdelivr.net/npm/toastify-js"
+    ></script>
+  </body>
 
 </html>

@@ -1,23 +1,38 @@
 <h1 class="divHeader">Chat</h1>
 
+<header>
+      <div>
+        <a href="/login">Login</a>
+        <br />
+        <a href="/register">Register</a>
+        <br />
+        <a href="/profile">Profile</a>
+        <br>
+        <a href="/api/products/realtimeProducts">Administrar productos</a>
+        <br>
+        <a href="/api/chat">Chat</a>
+      </div>
+    </header>
+
 <div>
-    <form action="" class="form">
-        <ul>
-            <li>
-                 <i id="user" class="user"></i>
-                 <input id="chatbox" class="input">
-            </li>
-        </ul>
-    </form>
-  
+  <form action="" class="form">
+    <ul>
+      <li>
+        <i id="user" class="user"></i>
+        <input id="chatbox" class="input" />
+      </li>
+    </ul>
+  </form>
+
 </div>
 
 <div id="logs" class="divHeader">
-    {{#each messages}}
-    <div class="message divHeader" >
-        <span class="user">{{this.user}}</span>: {{this.message}}
+  {{#each messages}}
+    <div class="message divHeader">
+      <span class="user">{{this.user}}</span>:
+      {{this.message}}
     </div>
-    {{/each}}
+  {{/each}}
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
